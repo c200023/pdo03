@@ -1,18 +1,29 @@
 ﻿<?php
 require_once("functions.php");
-if($_SERVER['REQUEST_METHOD'] === 'POST'){
+
+define("MAXITEM", 5);  
+
+if($_SERVER['REQUEST_METHOD'] === 'POST'){     
     if(isset($_POST["name"])){
         if(!empty($_POST["name"])) {
             $name = htmlspecialchars($_POST["name"], ENT_QUOTES, 'UTF-8');
         }
     }
-}
+    $page = 1;  
+} elseif($_SERVER['REQUEST_METHOD'] === 'GET'){  
+    if (isset($_GET['page'])) {
+        $page = (int)$_GET["page"];
+        $name = htmlspecialchars($_GET["name"], ENT_QUOTES, 'UTF-8');
+    } else {
+        $page = 1;
+        $name = htmlspecialchars($_GET["name"], ENT_QUOTES, 'UTF-8');
+    }
 
 $dbh = db_conn();
 $data = [];
 
 try{
-    $sql = "SELECT * FROM user WHERE name like :name";
+    $sql = "SELECT * FROM user WHERE name like :name LIMIT :start, :page";
     $stmt = $dbh->prepare($sql);
     $stmt->bindValue(':name', '%'.$name.'%', PDO::PARAM_STR);
     $stmt->execute();
